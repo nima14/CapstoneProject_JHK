@@ -23,3 +23,21 @@ FreqTok <- arrange(FreqTok,desc(FreqTok$Freq))
 #60% have 1 freq!
 mean(FreqTok$Freq==1)
 
+-------------------------------------------------------
+  
+  
+Twogram <-  tokens_ngrams(TokTwitter, n =2, concatenator = " ")
+
+
+FreqTokTwoGram <- as.data.frame(table(as.character(Twogram)) )
+
+FreqTokTwoGram <- arrange(FreqTokTwoGram,desc(FreqTokTwoGram$Freq))
+
+
+Threegram <- tokens_ngrams(TokTwitter, n =3, concatenator = " ")
+
+FreqTokThreeGram <- as.data.frame(table(as.character(Threegram)) )
+
+FreqTokThreeGram <- arrange(FreqTokThreeGram,desc(FreqTokThreeGram$Freq))
+
+plot(FreqTok)
