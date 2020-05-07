@@ -54,6 +54,7 @@ qplot(Threegram, geom="histogram")
 
 ggplot(df, aes(x, y)) + geom_point()
 
-
-
-grep()
+-----------------------------------------
+  
+x <- dfm(TokTwitter,stem=TRUE,tolower = TRUE)
+topfeatures(x,20)
