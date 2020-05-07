@@ -1,16 +1,20 @@
 library(quanteda)
 library(dplyr)
-setwd("C:/Users/n.taghidoost/Desktop/RFunctions/CapstoneProject_JHK")
+library(ggplot2)
+library(read)
 
-TrainTwitter <- read.table("TrainTwitter.txt")
+Path <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(Path)
+
+TrainTwitter <- read.table("TrainTwitter.txt",header = TRUE,fill=TRUE)
+#Delete unkown characters.
+TrainTwitter <- iconv(TrainTwitter, "UTF-8", "UTF-8",sub='') 
 ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
 CorpTwitter <- corpus(as.character(TrainTwitter$x))
-  TokTwitterProfane <- tokens(CorpTwitter,remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE)
+TokTwitter <- tokens(CorpTwitter,remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE)
   
-TokTwitter <- tokens_select(TokTwitterProfane,c(stopwords("en"),ProfanityWords$V1),
+TokTwitter <- tokens_select(TokTwitter,c(stopwords("en"),ProfanityWords$V1),
                             selection = "remove", padding = FALSE)
-
-#a <- cbind(as.character(TrainTwitter[grep("fuck",TrainTwitter$x),]),grep("fuck",TrainTwitter$x))
 
 
 
@@ -40,4 +44,16 @@ FreqTokThreeGram <- as.data.frame(table(as.character(Threegram)) )
 
 FreqTokThreeGram <- arrange(FreqTokThreeGram,desc(FreqTokThreeGram$Freq))
 
-plot(FreqTok)
+
+-------------------------------
+  
+FreqTokTwoGram %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(Var1, Freq))+ geom_col()
+
+qplot(Threegram, geom="histogram") 
+
+ggplot(df, aes(x, y)) + geom_point()
+
+
+
+grep()

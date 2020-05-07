@@ -6,7 +6,7 @@ close(conTwitter)
 
 
 conTwitter <- file("en_US.twitter.txt", "r")
-Twitter <- readLines(conTwitter, n=nTwitter, skipNul=TRUE, warn=FALSE)
+Twitter <- readLines(conTwitter, n=nTwitter, skipNul=TRUE, warn=FALSE, encoding="UTF-8")
 close(conTwitter)
 
 
@@ -49,3 +49,4 @@ SampleBlogs <- Blogs[InLines]
 
 write.table(SampleBlogs, "TrainBlogs.txt", append = FALSE, sep = " ", dec = ".",
             row.names = TRUE, col.names = TRUE)
+
