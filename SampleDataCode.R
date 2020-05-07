@@ -6,7 +6,7 @@ close(conTwitter)
 
 
 conTwitter <- file("en_US.twitter.txt", "r")
-Twitter <- readLines(conTwitter, n=nTwitter, skipNul=TRUE, warn=FALSE, encoding="UTF-8")
+Twitter <- readLines(conTwitter, n=nTwitter, skipNul=TRUE, warn=FALSE)
 close(conTwitter)
 
 
