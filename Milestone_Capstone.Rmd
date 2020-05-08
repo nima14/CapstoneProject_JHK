@@ -1,0 +1,306 @@
+---
+title: "Xapstone Milestone"
+author: "Nima Taghidoost"
+date: "5/8/2020"
+output: html_document
+---
+
+```{r,include=FALSE}
+library(quanteda)
+library(dplyr)
+library(ggplot2)
+library(stringi)
+library(stringr)
+library(data.table)
+Path <- "N:/R Courses/CapstoneProject_JHK"
+```
+
+## Getting Data
+
+### Getting Number of lines in files
+
+```{r,cache=TRUE,warning=FALSE}
+setwd("N:/TempThings/final/en_US")
+
+conTwitter <- file("en_US.twitter.txt", "r")
+nTwitter <- length(count.fields(conTwitter, sep = ","))
+close(conTwitter)
+
+conNews <- file("en_US.news.txt", "r")
+nNews <- length(count.fields(conNews, sep = ","))
+close(conNews)
+
+conBlogs <- file("en_US.blogs.txt", "r")
+nBlogs <- length(count.fields(conBlogs, sep = ","))
+close(conBlogs)
+```
+
+### Creating Sample Files
+```{r}
+setwd(Path)
+
+if (!file.exists("TrainTwitter.txt"))
+  {
+    setwd("N:/TempThings/final/en_US")
+
+
+    conTwitter <- file("en_US.twitter.txt", "r")
+    Twitter <- readLines(conTwitter, n=nTwitter, skipNul=TRUE, warn=FALSE)
+    close(conTwitter)
+
+
+    InLines <- which(rbinom(nTwitter,1,prob=0.1)==1)
+    SampleTwitter <- Twitter[InLines]
+
+    write.table(SampleTwitter, "TrainTwitter.txt", append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
+}
+#--------------------------------------------------------------------------------
+setwd(Path)
+
+if (!file.exists("TrainNews.txt"))
+{
+  
+  conNews <- file("en_US.news", "r")
+  News <- readLines(conNews, n=nNews, skipNul=TRUE, warn=FALSE)
+  close(conNews)
+
+
+  InLines <- which(rbinom(nNews,1,prob=0.1)==1)
+  SampleNews <- News[InLines]
+
+  write.table(SampleNews, "TrainNews.txt", append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
+}
+#---------------------------------------------------------
+setwd(Path)
+
+if (!file.exists("TrainBlogs.txt"))
+{
+
+  InLines <- which(rbinom(nBlogs,1,prob=0.1)==1)
+  SampleBlogs <- Blogs[InLines]
+
+  write.table(SampleBlogs, "TrainBlogs.txt", append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
+}
+```
+
+### Read from Sample files
+```{r}
+TrainTwitter <- read.table("TrainTwitter.txt",header = TRUE,fill=TRUE)
+TrainBlogs <- read.table("TrainBlogs.txt",header = TRUE,fill=TRUE)
+TrainNews <- read.table("TrainNews.txt",header = TRUE,fill=TRUE)
+```
+
+## Data Cleansing
+```{r}
+#Delete unkown characters.
+TrainTwitter$x <- iconv(TrainTwitter$x, "UTF-8", "UTF-8",sub='') 
+TrainBlogs$x <- iconv(TrainBlogs$x, "UTF-8", "UTF-8",sub='') 
+TrainNews$x <- iconv(TrainNews$x, "UTF-8", "UTF-8",sub='') 
+
+#Delete break lines.
+TrainTwitter$x <- str_replace_all(TrainTwitter$x, "[\r\n]" , " ")
+TrainBlogs$x <- str_replace_all(TrainBlogs$x, "[\r\n]" , " ")
+TrainNews$x <- str_replace_all(TrainNews$x, "[\r\n]" , " ")
+
+#Creating Corpus
+CorpTwitter <- corpus(as.character(TrainTwitter$x))
+CorpBlogs <- corpus(as.character(TrainBlogs$x))
+CorpNews <- corpus(as.character(TrainNews$x))
+
+#Remove numbers & punctuations
+TokTwitter <- tokens(CorpTwitter,remove_punct = TRUE, remove_numbers =  TRUE,
+                     remove_symbols = TRUE)
+TokBlogs <- tokens(CorpBlogs,remove_punct = TRUE, remove_numbers =  TRUE,
+                     remove_symbols = TRUE)
+TokNews <- tokens(CorpNews,remove_punct = TRUE, remove_numbers =  TRUE,
+                     remove_symbols = TRUE)
+#Lowercase all the characters.
+TokTwitter <- tokens_tolower(TokTwitter) 
+TokBlogs <- tokens_tolower(TokBlogs)
+TokNews <- tokens_tolower(TokNews)
+#Remove profane words.
+ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
+
+TokTwitter <- tokens_select(TokTwitter,c(stopwords("en"),ProfanityWords$V1),
+                            selection = "remove", padding = FALSE)
+TokBlogs <- tokens_select(TokBlogs,c(stopwords("en"),ProfanityWords$V1),
+                            selection = "remove", padding = FALSE)
+TokNews <- tokens_select(TokNews,c(stopwords("en"),ProfanityWords$V1),
+                            selection = "remove", padding = FALSE)
+#Lemmatization
+TokTwitter <- tokens_wordstem(TokTwitter)
+TokBlogs <- tokens_wordstem(TokBlogs)
+TokNews <- tokens_wordstem(TokNews)
+```
+
+## Exploratory Analysis
+
+### Some characteristics of 3 files
+
+```{r}
+  
+#Total number of words
+TotalNWordsTwitter <- stri_stats_latex(TrainTwitter$x)[[4]]
+TotalNWordsBlogs <- stri_stats_latex(TrainBlogs$x)[[4]]
+TotalNWordsNews <- stri_stats_latex(TrainNews$x)[[4]]
+
+#Mean of number of words in each record
+
+MeanWordsTwitter <-
+    stri_stats_latex(TrainTwitter$x)[[4]]/ stri_stats_general(TrainTwitter$x)[[1]]
+
+MeanWordsBlogs <-
+    stri_stats_latex(TrainBlogs$x)[[4]]/ stri_stats_general(TrainBlogs$x)[[1]]
+
+MeanWordsNews <-
+    stri_stats_latex(TrainNews$x)[[4]]/ stri_stats_general(TrainNews$x)[[1]]
+
+
+#Total number of characters
+TotalNCharsTwitter <- stri_stats_latex(TrainTwitter$x)[[1]]
+TotalNCharsBlogs <- stri_stats_latex(TrainBlogs$x)[[1]]
+TotalNCharsNews <- stri_stats_latex(TrainNews$x)[[1]]
+
+#Mean of number of characters in each record.
+
+MeanCharsTwitter <-
+stri_stats_latex(TrainTwitter$x)[[1]]/stri_stats_general(TrainTwitter$x)[[1]]
+
+MeanCharsBlogs <-
+stri_stats_latex(TrainBlogs$x)[[1]]/stri_stats_general(TrainBlogs$x)[[1]]
+
+MeanCharsNews <-
+stri_stats_latex(TrainNews$x)[[1]]/stri_stats_general(TrainNews$x)[[1]]
+
+#Mean number of characters in each word
+
+MeanCharPerWordTwitter <- TotalNCharsTwitter/TotalNWordsTwitter
+MeanCharPerWordBlogs <- TotalNCharsBlogs/TotalNWordsBlogs
+MeanCharPerWordNews <- TotalNCharsNews/TotalNWordsNews
+
+data.table(
+            File=c("Twitter","Blogs","News"),
+            Words_Num=c(TotalNWordsTwitter,TotalNWordsBlogs,TotalNWordsNews),
+            Words_Mean=c(MeanWordsTwitter,MeanWordsBlogs,MeanWordsNews),
+            Char_Num=c(TotalNCharsTwitter,TotalNCharsBlogs,TotalNCharsNews),
+            Char_Mean=c(MeanCharsTwitter,MeanCharsBlogs,MeanCharsNews),
+            Char_Mean_Per_Word=c(MeanCharPerWordTwitter,MeanCharPerWordBlogs,MeanCharPerWordNews)
+            
+)
+```
+
+
+### Building 2-gram & 3-grams
+```{r}
+TwogramTwitter <-  tokens_ngrams(TokTwitter, n =2, concatenator = " ")
+TwogramBlogs <-  tokens_ngrams(TokBlogs, n =2, concatenator = " ")
+TwogramNews <-  tokens_ngrams(TokNews, n =2, concatenator = " ")
+
+ThreegramTwitter <- tokens_ngrams(TokTwitter, n =3, concatenator = " ")
+ThreegramBlogs <- tokens_ngrams(TokBlogs, n =3, concatenator = " ")
+ThreegramNews <- tokens_ngrams(TokNews, n =3, concatenator = " ")
+```
+
+### Getting the most frequent tokens,2-grams & 3-grams
+
+```{r}
+#Frequency of 1-grams
+FreqTokTwitter <- data.table( table(as.character(TokTwitter))  )
+FreqTokTwitter <- FreqTokTwitter[order(-FreqTokTwitter$N),]
+
+FreqTokBlogs <- data.table( table(as.character(TokBlogs))  )
+FreqTokBlogs <- FreqTokBlogs[order(-FreqTokBlogs$N),]
+
+FreqTokNews <- data.table( table(as.character(TokNews))  )
+FreqTokNews <- FreqTokNews[order(-FreqTokNews$N),]
+
+#Frequency of 2-grams
+FreqTokTwoGramTwitter <- data.table( table(as.character(TwogramTwitter))  )
+FreqTokTwoGramTwitter <- FreqTokTwoGramTwitter[order(-FreqTokTwoGramTwitter$N),]
+
+
+FreqTokTwoGramBlogs <- data.table( table(as.character(TwogramBlogs))  )
+FreqTokTwoGramBlogs <- FreqTokTwoGramBlogs[order(-FreqTokTwoGramBlogs$N),]
+
+FreqTokTwoGramNews <- data.table( table(as.character(TwogramNews))  )
+FreqTokTwoGramNews <- FreqTokTwoGramNews[order(-FreqTokTwoGramNews$N),]
+
+#Frequency of 3-grams
+
+FreqTokThreeGramTwitter <- data.table( table(as.character(ThreegramTwitter))  )
+FreqTokThreeGramTwitter <- FreqTokThreeGramTwitter[order(-FreqTokThreeGramTwitter$N),]
+
+FreqTokThreeGramBlogs <- data.table( table(as.character(ThreegramBlogs))  )
+FreqTokThreeGramBlogs <- FreqTokThreeGramBlogs[order(-FreqTokThreeGramBlogs$N),]
+
+FreqTokThreeGramNews <- data.table( table(as.character(ThreegramNews))  )
+FreqTokThreeGramNews <- FreqTokThreeGramNews[order(-FreqTokThreeGramNews$N),]
+```
+
+### Building Plots of the most Frequent n-grams
+
+```{r}
+# Plot 1-grams
+FreqTokTwitter %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+  labs(x = "1-Gram",y="Frequency")
+
+FreqTokBlogs %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+  labs(x = "1-Gram",y="Frequency")
+
+FreqTokNews %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+  labs(x = "1-Gram",y="Frequency")
+
+#Plot 2-grams
+FreqTokTwoGramTwitter %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+  labs(x = "2-Gram",y="Frequency")
+
+FreqTokTwoGramBlogs %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+  labs(x = "2-Gram",y="Frequency")
+
+FreqTokTwoGramNews %>% top_n(20) %>% as.data.frame() %>%
+  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+  labs(x = "2-Gram",y="Frequency")
+
+#Plot 3-grams
+FreqTokThreeGramTwitter %>% top_n(20) %>% as.data.frame() %>%
+    ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+        labs(x = "3-Gram",y="Frequency")
+
+FreqTokThreeGramBlogs %>% top_n(20) %>% as.data.frame() %>%
+    ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+        labs(x = "3-Gram",y="Frequency")
+
+FreqTokThreeGramNews %>% top_n(20) %>% as.data.frame() %>%
+    ggplot( aes(reorder(V1,-N), N))+ geom_col()+
+  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+        labs(x = "3-Gram",y="Frequency")
+
+```
+
+### Percentile of words which occured just once
+```{r}
+data.table(
+            File=c("Twitter","Blogs","News"),
+            Percent=c(  mean(FreqTokTwitter$N==1)*100,
+                        mean(FreqTokBlogs$N==1)*100,
+                        mean(FreqTokNews$N==1)*100
+                     )
+          )
+
+```

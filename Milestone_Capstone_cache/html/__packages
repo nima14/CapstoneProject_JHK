@@ -1,0 +1,7 @@
+base
+quanteda
+dplyr
+ggplot2
+stringi
+stringr
+data.table
