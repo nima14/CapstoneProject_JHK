@@ -1,5 +1,5 @@
 ---
-title: "Xapstone Milestone"
+title: "Capstone Milestone"
 author: "Nima Taghidoost"
 date: "5/8/2020"
 output: html_document
@@ -329,3 +329,6 @@ data.table(
           )
 
 ```
+
+## Next Step
+I'm going to complete my prediction algorithm. This algorithm will be deployed to the shiny app. The users can put an input and then the app will suggest an appropriate word.

@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/611670/c9fab57dbad74e0e8f63d17beceece3d
+bundleId: https://api.rpubs.com/api/v1/document/611670/c9fab57dbad74e0e8f63d17beceece3d
+url: http://rpubs.com/Nima14/611670
+when: 1589028844.28297
