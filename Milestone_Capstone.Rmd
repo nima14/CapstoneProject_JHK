@@ -12,7 +12,8 @@ library(ggplot2)
 library(stringi)
 library(stringr)
 library(data.table)
-Path <- "N:/R Courses/CapstoneProject_JHK"
+library(gridExtra)
+Path <- "C:/Users/n.taghidoost/Desktop/RFunctions/CapstoneProject_JHK"
 ```
 
 ## Getting Data
@@ -242,55 +243,79 @@ FreqTokThreeGramNews <- FreqTokThreeGramNews[order(-FreqTokThreeGramNews$N),]
 
 ### Building Plots of the most Frequent n-grams
 
-```{r}
+```{r,fig.height = 10}
 # Plot 1-grams
-FreqTokTwitter %>% top_n(20) %>% as.data.frame() %>%
-  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-  labs(x = "1-Gram",y="Frequency")
+Plot_FreqTokTwitter <- FreqTokTwitter %>% top_n(20,N) %>% as.data.frame() %>%
+                        ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="lightskyblue")+
+                        theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                        labs(x = "1-Gram",y="Frequency")+
+                         ggtitle("Twitter") +
+                        theme(plot.title = element_text(hjust = 0.5))
 
-FreqTokBlogs %>% top_n(20) %>% as.data.frame() %>%
-  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-  labs(x = "1-Gram",y="Frequency")
 
-FreqTokNews %>% top_n(20) %>% as.data.frame() %>%
-  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-  labs(x = "1-Gram",y="Frequency")
+Plot_FreqTokBlogs <- FreqTokBlogs %>% top_n(20,N) %>% as.data.frame() %>%
+                      ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="mediumseagreen")+
+                      theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                      labs(x = "1-Gram",y="Frequency")+
+                       ggtitle("Blogs") +
+                      theme(plot.title = element_text(hjust = 0.5))
+
+Plot_FreqTokNews <- FreqTokNews %>% top_n(20,N) %>% as.data.frame() %>%
+                    ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="maroon")+
+                    theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                    labs(x = "1-Gram",y="Frequency")+
+                     ggtitle("News") +
+                    theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(Plot_FreqTokTwitter,Plot_FreqTokBlogs,Plot_FreqTokNews)
 
 #Plot 2-grams
-FreqTokTwoGramTwitter %>% top_n(20) %>% as.data.frame() %>%
-  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-  labs(x = "2-Gram",y="Frequency")
+Plot_FreqTokTwoGramTwitter <- FreqTokTwoGramTwitter %>% top_n(20,N) %>% as.data.frame() %>%
+                              ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="lightskyblue")+
+                              theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                              labs(x = "2-Gram",y="Frequency")+
+                               ggtitle("Twitter") +
+                              theme(plot.title = element_text(hjust = 0.5))
 
-FreqTokTwoGramBlogs %>% top_n(20) %>% as.data.frame() %>%
-  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-  labs(x = "2-Gram",y="Frequency")
+Plot_FreqTokTwoGramBlogs <- FreqTokTwoGramBlogs %>% top_n(20,N) %>% as.data.frame() %>%
+                            ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="mediumseagreen")+
+                            theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                            labs(x = "2-Gram",y="Frequency")+
+                             ggtitle("Blogs") +
+                            theme(plot.title = element_text(hjust = 0.5))
 
-FreqTokTwoGramNews %>% top_n(20) %>% as.data.frame() %>%
-  ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-  labs(x = "2-Gram",y="Frequency")
+Plot_FreqTokTwoGramNews <- FreqTokTwoGramNews %>% top_n(20,N) %>% as.data.frame() %>%
+                            ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="maroon")+
+                            theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                            labs(x = "2-Gram",y="Frequency")+
+                             ggtitle("News") +
+                            theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(Plot_FreqTokTwoGramTwitter,Plot_FreqTokTwoGramBlogs,Plot_FreqTokTwoGramNews)
 
 #Plot 3-grams
-FreqTokThreeGramTwitter %>% top_n(20) %>% as.data.frame() %>%
-    ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-        labs(x = "3-Gram",y="Frequency")
+Plot_FreqTokThreeGramTwitter <- FreqTokThreeGramTwitter %>% top_n(20,N) %>% as.data.frame() %>%
+                                  ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="lightskyblue")+
+                                theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                                      labs(x = "3-Gram",y="Frequency")+
+                                 ggtitle("Twitter") +
+                                theme(plot.title = element_text(hjust = 0.5))
 
-FreqTokThreeGramBlogs %>% top_n(20) %>% as.data.frame() %>%
-    ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-        labs(x = "3-Gram",y="Frequency")
+Plot_FreqTokThreeGramBlogs <- FreqTokThreeGramBlogs %>% top_n(20,N) %>% as.data.frame() %>%
+                                ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="mediumseagreen")+
+                              theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                                    labs(x = "3-Gram",y="Frequency")+
+                               ggtitle("Blogs") +
+                              theme(plot.title = element_text(hjust = 0.5))
 
-FreqTokThreeGramNews %>% top_n(20) %>% as.data.frame() %>%
-    ggplot( aes(reorder(V1,-N), N))+ geom_col()+
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
-        labs(x = "3-Gram",y="Frequency")
+Plot_FreqTokThreeGramNews <- FreqTokThreeGramNews %>% top_n(20,N) %>% as.data.frame() %>%
+                              ggplot( aes(reorder(V1,-N), N))+ geom_col(fill="maroon")+
+                            theme(axis.text.x=element_text(angle = -90, hjust = 0))+ 
+                                  labs(x = "3-Gram",y="Frequency")+
+                             ggtitle("News") +
+                            theme(plot.title = element_text(hjust = 0.5))
 
+grid.arrange(Plot_FreqTokThreeGramTwitter,Plot_FreqTokThreeGramBlogs,Plot_FreqTokThreeGramNews)
 ```
 
 ### Percentile of words which occured just once
