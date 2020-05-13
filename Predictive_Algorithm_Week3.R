@@ -27,7 +27,7 @@ Corp <- data.table(corpus(as.character(Train$x)),Train$Source)
 names(Corp) <- c("x","Source")
 
 
-#Create tokwns + Remove numbers & punctuations
+#Create tokens + Remove numbers & punctuations
 Tok <- data.table(tokens(Corp$x,remove_punct = TRUE, remove_numbers =  TRUE,
                      remove_symbols = TRUE),Train$Source)
 names(Tok) <- c("x","Source")
@@ -40,15 +40,16 @@ names(Tok) <- c("x","Source")
 #Remove profane words.
 ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
 
-Tok <- data.table(tokens_select(Tok$x,c(stopwords("en"),ProfanityWords$V1),
+Tok <- data.table(tokens_select(Tok$x,ProfanityWords$V1,
                             selection = "remove", padding = FALSE) , Tok$Source )
 names(Tok) <- c("x","Source")
 
 rm(ProfanityWords)
 
 #Lemmatization
-Tok <- data.table(tokens_wordstem(Tok$x) , Tok$Source )
-names(Tok) <- c("x","Source")
+
+# Tok <- data.table(tokens_wordstem(Tok$x) , Tok$Source )
+# names(Tok) <- c("x","Source")
 
 
 
@@ -58,12 +59,45 @@ Twogram <-  data.table(tokens_ngrams(Tok$x, n =2, concatenator = " "), Tok$Sourc
 names(Tok) <- c("x","Source")
 
 
+
 Threegram <-  data.table(tokens_ngrams(Tok$x, n =3, concatenator = " "), Tok$Source)
 names(Tok) <- c("x","Source")
 
 
+Fourgram <-  data.table(tokens_ngrams(Tok$x, n =4, concatenator = " "), Tok$Source)
+names(Tok) <- c("x","Source")
 
-# Input <- "Somebody told me to go there but I refused to do so"
+Fivegram <-  data.table(tokens_ngrams(Tok$x, n =5, concatenator = " "), Tok$Source)
+names(Tok) <- c("x","Source")
+
+
+
+## Cleaning the Tokens
+
+FreqTok <- data.table( table(as.character(Tok$x))  )
+Base_Tok <- FreqTok[FreqTok$N>1]
+rm(FreqTok)
+
+FreqTokTwoGram <- data.table( table(as.character(Twogram$V1))  )
+Base_TwoGram <- FreqTokTwoGram[FreqTokTwoGram$N>1]
+rm(FreqTokTwoGram)
+
+
+FreqTokThreeGram <- data.table( table(as.character(Threegram$V1))  )
+Base_ThreeGram <- FreqTokThreeGram[FreqTokThreeGram$N>1]
+rm(FreqTokThreeGram)
+
+
+FreqTokFourGram <- data.table( table(as.character(Fourgram$V1))  )
+Base_FourGram <- FreqTokFourGram[FreqTokFourGram$N>1]
+rm(FreqTokFourGram)
+
+
+FreqTokFiveGram <- data.table( table(as.character(Fivegram$V1))  )
+Base_FiveGram <- FreqTokFiveGram[FreqTokFiveGram$N>1]
+rm(FreqTokFiveGram)
+
+# Input <- "Somebody told me to go there but I Refused to do so"
 # Input2 <- "Hello there"
 # Input3 <- "I do not work there"
 # Input4 <- "me"
@@ -72,19 +106,22 @@ names(Tok) <- c("x","Source")
 
 
 MakeNGrams <- function(Sentence)
-{
-  
-   x <<- as.character( rep("",4))
-   len <- stri_stats_latex(Sentence)[[4]]
+     {
+         Sentence <- tolower(Sentence) 
+         x <<- as.character( rep("",4))
+         len <- stri_stats_latex(Sentence)[[4]]
             
             for(i in 0:min(3,len-1))
             {
-              Start <- len-i
-              End <- len
-              x[i+1] <<- word(Sentence,Start,End)
+                  Start <- len-i
+                  End <- len
+                  x[i+1] <<- word(Sentence,Start,End)
               
             }
             
             
   
 }
+
+
+match(x,Base_FourGram$V1)
