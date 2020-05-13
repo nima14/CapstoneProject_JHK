@@ -75,26 +75,26 @@ names(Tok) <- c("x","Source")
 ## Cleaning the Tokens
 
 FreqTok <- data.table( table(as.character(Tok$x))  )
-Base_Tok <- FreqTok[FreqTok$N>1]
+Base_Tok <- data.table(FreqTok[FreqTok$N>1])
 rm(FreqTok)
 
 FreqTokTwoGram <- data.table( table(as.character(Twogram$V1))  )
-Base_TwoGram <- FreqTokTwoGram[FreqTokTwoGram$N>1]
+Base_TwoGram <- data.table(FreqTokTwoGram[FreqTokTwoGram$N>1])
 rm(FreqTokTwoGram)
 
 
 FreqTokThreeGram <- data.table( table(as.character(Threegram$V1))  )
-Base_ThreeGram <- FreqTokThreeGram[FreqTokThreeGram$N>1]
+Base_ThreeGram <- data.table(FreqTokThreeGram[FreqTokThreeGram$N>1])
 rm(FreqTokThreeGram)
 
 
 FreqTokFourGram <- data.table( table(as.character(Fourgram$V1))  )
-Base_FourGram <- FreqTokFourGram[FreqTokFourGram$N>1]
+Base_FourGram <- data.table(FreqTokFourGram[FreqTokFourGram$N>1])
 rm(FreqTokFourGram)
 
 
 FreqTokFiveGram <- data.table( table(as.character(Fivegram$V1))  )
-Base_FiveGram <- FreqTokFiveGram[FreqTokFiveGram$N>1]
+Base_FiveGram <- data.table(FreqTokFiveGram[FreqTokFiveGram$N>1])
 rm(FreqTokFiveGram)
 
 # Input <- "Somebody told me to go there but I Refused to do so"
