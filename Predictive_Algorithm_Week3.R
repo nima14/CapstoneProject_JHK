@@ -63,3 +63,28 @@ names(Tok) <- c("x","Source")
 
 
 
+# Input <- "Somebody told me to go there but I refused to do so"
+# Input2 <- "Hello there"
+# Input3 <- "I do not work there"
+# Input4 <- "me"
+
+
+
+
+MakeNGrams <- function(Sentence)
+{
+  
+   x <<- as.character( rep("",4))
+   len <- stri_stats_latex(Sentence)[[4]]
+            
+            for(i in 0:min(3,len-1))
+            {
+              Start <- len-i
+              End <- len
+              x[i+1] <<- word(Sentence,Start,End)
+              
+            }
+            
+            
+  
+}
