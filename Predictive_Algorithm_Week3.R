@@ -117,59 +117,6 @@ saveRDS(FourG_Words,"FourG_Words.Rdata")
 saveRDS(FiveG_Words,"FiveG_Words.Rdata")
 
 
-# Input <- "Somebody told me to go there but I Refused to do so"
-# Input2 <- "Hello there"
-# Input3 <- "I do not work there"
-# Input4 <- "me"
-# Input5 <- "I went to Johns Hopkins"
-
-
-
-MakeNGrams <- function(Sentence)
-     {
-         Sentence <- tolower(Sentence) 
-         x <<- as.character( rep("",4))
-         len <- stri_stats_latex(Sentence)[[4]]
-            
-            for(i in 0:min(3,len-1))
-            {
-                  Start <- len-i
-                  End <- len
-                  x[i+1] <<- word(Sentence,Start,End)
-            }
-
-         
-
-    Inp_1g <<-  data.table(x[1] )  
-    for(i in 2:4)
-    {
-      assign(paste("Inp_",i,"g",sep=''),data.table(str_split_fixed(x[i]," ", i)),
-                            envir = .GlobalEnv) 
-    }
-}
-
-
-
-rm(Corp,Fivegram,Fourgram,Threegram,Tok,Train,Twogram)
-
-
-
-MakeNGrams(Input5)
-
-
-
-FiveG_Words[V1==Inp_4g[[1]] & V2==Inp_4g[[2]] &
-            V4== Inp_3g[[3]]& V2==Inp_4g[[4]] ,c(5,6) ]
-
-
-FourG_Words[V1==Inp_3g[[1]] & V2==Inp_3g[[2]] &
-              V3== Inp_3g[[3]],c(4,5) ]
-
-ThreeG_Words[V1==Inp_2g[[1]] & V2==Inp_2g[[2]],c(3,4)]
-
-TwoG_Words[V1==Inp_1g[[1]] ,c(2,3)]
-
-OneG_Words
 
 
 
