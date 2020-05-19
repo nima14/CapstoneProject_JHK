@@ -31,14 +31,17 @@ FiveG_Words  <- readRDS("FiveG_Words.Rdata")
 # Input15 <- "Be grateful for the good times and keep the faith during the"
 # Input16 <- "If this isn't the cutest thing you've ever seen, then you must be"
 # Input17 <- "Sell the"
+# Input18 <- "This Video will be"
+# Input19 <- "have to put on"
 
 
 
 
-
-Sentence <- "Sell the"
-gamma3 <- 0.5
+Sentence <- Input18
 gamma2 <- 0.5
+gamma3 <- 0.5
+gamma4 <- 0.5
+gamma5 <- 0.5
 
 
 MakeNGrams <- function(Sentence)
@@ -70,13 +73,27 @@ MakeNGrams <- function(Sentence)
 
 
 
-GetObsProbs <- function(Sentence,gamma2,gamma3){
+GetObsProbs <- function(Sentence,gamma2,gamma3,gamma4,gamma5){
   
                 ngrams <- MakeNGrams(Sentence)
                 Inp_1g <- ngrams[[1]]
                 Inp_2g <- ngrams[[2]]
                 Inp_3g <- ngrams[[3]]
                 Inp_4g <- ngrams[[4]]
+                
+ #------------------------------------------------------------               
+                obs_5 <- data.table(FiveG_Words[V1==Inp_4g[[1]] & V2==Inp_4g[[2]]
+                                                & V3==Inp_4g[[3]]  & V4==Inp_4g[[4]] ,c(5,6)] %>%
+                                                                                    arrange(desc(N)))
+                TotalSum_5 <- sum(obs_5$N)
+                obsProb_5 <- data.table(obs_5$V5,(obs_5$N-gamma5)/TotalSum_5)
+                alpha_5 <- 1 - sum(obsProb_5$V2)
+#------------------------------------------------------------               
+                obs_4 <- data.table(FourG_Words[V1==Inp_3g[[1]] & V2==Inp_3g[[2]]
+                                                & V3==Inp_3g[[3]] ,c(4,5)] %>% arrange(desc(N)))
+                TotalSum_4 <- sum(obs_4$N)
+                obsProb_4 <- data.table(obs_4$V4,(obs_4$N-gamma4)/TotalSum_4)
+                alpha_4 <- 1 - sum(obsProb_4$V2)
 #------------------------------------------------------------               
                 obs_3 <- data.table(ThreeG_Words[V1==Inp_2g[[1]] & V2==Inp_2g[[2]],c(3,4)] %>% arrange(desc(N)))
                 TotalSum_3 <- sum(obs_3$N)
@@ -96,11 +113,19 @@ GetObsProbs <- function(Sentence,gamma2,gamma3){
                 Total2GNot3G <- rbind(obsProb_2[!(V1 %in% obsProb_3$V1)],Prob_1)
                 TotalSumProb_2 <- sum(Total2GNot3G$V2)
                 Prob_2 <- data.table(Total2GNot3G$V1,alpha_3*Total2GNot3G$V2/TotalSumProb_2)
-#------------------------------------------------------------              
-                Prob_3 <- rbind(obsProb_3,Prob_2)
-                top_n(Prob_3,5,V2)
+#------------------------------------------------------------    
+                Total3GNot4G <- rbind(obsProb_3[!(V1 %in% obsProb_4$V1)],Prob_2)
+                TotalSumProb_3 <- sum(Total3GNot4G$V2)
+                Prob_3 <- data.table(Total3GNot4G$V1,alpha_4*Total3GNot4G$V2/TotalSumProb_3)
+#------------------------------------------------------------  
+                Total4GNot5G <- rbind(obsProb_4[!(V1 %in% obsProb_5$V1)],Prob_3)
+                TotalSumProb_4 <- sum(Total4GNot5G$V2)
+                Prob_4 <- data.table(Total4GNot5G$V1,alpha_5*Total4GNot5G$V2/TotalSumProb_4)
+ #------------------------------------------------------------  
+                Prob_5 <- rbind(obsProb_5,Prob_4)
+                top_n(Prob_5,5,V2)
                 
 }
 
 
-GetObsProbs(Input4,0.5,0.5)
+GetObsProbs(Input18,0.5,0.5,0.5,0.5)
