@@ -73,7 +73,7 @@ MakeNGrams <- function(Sentence)
 
 
 
-GetObsProbs <- function(Sentence,gamma2,gamma3,gamma4,gamma5){
+GetObsProbs <- function(Sentence,gamma2=0.5,gamma3=0.5,gamma4=0.5,gamma5=0.5){
   
                 ngrams <- MakeNGrams(Sentence)
                 Inp_1g <- ngrams[[1]]
