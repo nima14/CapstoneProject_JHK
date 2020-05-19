@@ -128,4 +128,4 @@ GetObsProbs <- function(Sentence,gamma2=0.5,gamma3=0.5,gamma4=0.5,gamma5=0.5){
 }
 
 
-GetObsProbs(Input18,0.5,0.5,0.5,0.5)
+GetObsProbs(Input18)
