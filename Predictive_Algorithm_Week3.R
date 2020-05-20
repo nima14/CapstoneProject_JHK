@@ -3,11 +3,11 @@ library(stringi)
 library(stringr)
 library(data.table)
 library(quanteda)
-TrainTwitter <- read.table("TrainTwitter.txt",header = TRUE,fill=TRUE) %>% mutate(Source='Twitter')
+TrainTwitter <- read.table("TrainTwitter2.txt",header = TRUE,fill=TRUE) %>% mutate(Source='Twitter')
  
-TrainBlogs <- read.table("TrainBlogs.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='Blogs')
+TrainBlogs <- read.table("TrainBlogs2.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='Blogs')
 
-TrainNews <- read.table("TrainNews.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='News')
+TrainNews <- read.table("TrainNews2.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='News')
 
 Train <- rbind(TrainTwitter,TrainBlogs,TrainNews)
 rm(TrainTwitter,TrainBlogs,TrainNews)
@@ -110,11 +110,11 @@ rm(FreqTokFiveGram,Base_FiveGram)
 
 # Save the files
 
-saveRDS(OneG_Words,"OneG_Words.Rdata")
-saveRDS(TwoG_Words,"TwoG_Words.Rdata")
-saveRDS(ThreeG_Words,"ThreeG_Words.Rdata")
-saveRDS(FourG_Words,"FourG_Words.Rdata")
-saveRDS(FiveG_Words,"FiveG_Words.Rdata")
+saveRDS(OneG_Words,"OneG_Words2.Rdata")
+saveRDS(TwoG_Words,"TwoG_Words2.Rdata")
+saveRDS(ThreeG_Words,"ThreeG_Words2.Rdata")
+saveRDS(FourG_Words,"FourG_Words2.Rdata")
+saveRDS(FiveG_Words,"FiveG_Words2.Rdata")
 
 
 
