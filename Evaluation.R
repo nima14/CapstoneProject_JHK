@@ -16,6 +16,8 @@ rm(TrainTwitter,TrainBlogs,TrainNews)
 
 #Randomly shuffle the data
 N <- nrow(TotalTrain)
+
+set.seed(121)
 TotalTrain<-TotalTrain[sample(N),]
 #Create 10 equally size folds
 folds <- cut(seq(1,N),breaks=10,labels=FALSE)
@@ -138,11 +140,35 @@ for(i in 1:10){
                     if (i==1) {Ngram_Words3 <- Ngram_Words}
                     else    {Ngram_Words3 <- rbind(Ngram_Words3,Ngram_Words)}
                     }
-
                     
+                    Ngram_Words3 <-     Ngram_Words3 %>%filter(N>1) 
+                    Ngram_Words3 <- data.table(Ngram_Words3)
+                    setkey(Ngram_Words3,Fold,N)
     
                     
 }
 
 
-saveRDS(Ngram_Words3,"Ngram_Words3")
+saveRDS(Ngram_Words3,"Ngram_Words3.Rdata")
+
+Ngram_Words3 <- readRDS("Ngram_Words3.Rdata")
+
+rm(Base_FiveGram,Base_FourGram,Base_ThreeGram,Base_TwoGram,Corp,Fivegram,Fourgram
+   ,Threegram,Twogram,Tok,FiveG_Words,FourG_Words,ThreeG_Words,TwoG_Words,OneG_Words
+   ,Ngram_Words,Train,i,testIndexes)
+
+for (i in 1:10) {
+
+            Ngram_Words3 <-     Ngram_Words3 %>%filter(Fold!=1)  %>%
+                  group_by(Prefix,Pred,ngram) %>% summarise(N=sum(N)) 
+            
+            testIndexes <- sample(which(folds==2,arr.ind=TRUE),1000,replace=FALSE)
+            
+            Test<- TotalTrain[testIndexes, ]
+            
+               Test$len <- stri_count_words(Test$x)
+               
+           
+            
+}
+
