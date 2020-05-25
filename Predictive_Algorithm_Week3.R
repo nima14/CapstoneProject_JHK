@@ -107,14 +107,41 @@ names(FiveG_Words) <- c("V1","V2","V3","V4","V5","N")
 rm(FreqTokFiveGram,Base_FiveGram)
 
 
+##Inetgration of Ngrams
+
+
+names(OneG_Words) <- c("Pred","N")
+
+
+names(TwoG_Words) <- c("Prefix","Pred","N")
+
+
+ThreeG_Words <- data.table(paste(ThreeG_Words$V1,ThreeG_Words$V2),ThreeG_Words$V3,ThreeG_Words$N)
+names(ThreeG_Words) <- c("Prefix","Pred","N")
+
+
+FourG_Words <- data.table(paste(FourG_Words$V1,FourG_Words$V2,FourG_Words$V3),FourG_Words$V4,FourG_Words$N)
+names(FourG_Words) <- c("Prefix","Pred","N")
+
+
+FiveG_Words <- data.table(paste(FiveG_Words$V1,FiveG_Words$V2,FiveG_Words$V3,FiveG_Words$V4),FiveG_Words$V5,FiveG_Words$N)
+names(FiveG_Words) <- c("Prefix","Pred","N")
+
+
+
+Ngram_Words <- rbind(data.table(Prefix="",OneG_Words,ngram=1),
+                     data.table(TwoG_Words,ngram=2),
+                     data.table(ThreeG_Words,ngram=3),
+                     data.table(FourG_Words,ngram=4),
+                     data.table(FiveG_Words,ngram=5))
+
+setkey(Ngram_Words,Prefix,ngram)
+
 
 # Save the files
 
-saveRDS(OneG_Words,"OneG_Words2.Rdata")
-saveRDS(TwoG_Words,"TwoG_Words2.Rdata")
-saveRDS(ThreeG_Words,"ThreeG_Words2.Rdata")
-saveRDS(FourG_Words,"FourG_Words2.Rdata")
-saveRDS(FiveG_Words,"FiveG_Words2.Rdata")
+saveRDS(Ngram_Words,"Ngram_Words2.Rdata")
+
 
 
 
