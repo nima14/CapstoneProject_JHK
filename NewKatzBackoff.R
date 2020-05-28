@@ -139,7 +139,7 @@ GetObsProbs <- function(Sentence,gamma2=0.5,gamma3=0.5,gamma4=0.5,gamma5=0.5){
   alpha_2 <- 1 - sum(obsProb_2$V2)
   #------------------------------------------------------------
   TotalWords <- data.table(Ngram_Words3[Ngram_Words3$ngram==1,c(2,4)] %>% arrange(desc(N)))
-  unobs_1 <- TotalWords[!(Pred %in% obs_2$V2),]
+  unobs_1 <- TotalWords[!(Pred %in% obs_2$Pred),]
   TotalSum_1 <- sum(unobs_1$N)
   Prob_1 <- data.table(unobs_1$Pred,alpha_2*unobs_1$N/TotalSum_1)
   #------------------------------------------------------------
