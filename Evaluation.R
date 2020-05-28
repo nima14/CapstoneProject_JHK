@@ -3,7 +3,7 @@ library(stringi)
 library(stringr)
 library(data.table)
 library(quanteda)
-
+library(tm)
 
 TrainTwitter <- read.table("TrainTwitter2.txt",header = TRUE,fill=TRUE) %>% mutate(Source='Twitter')
 TrainBlogs <- read.table("TrainBlogs2.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='Blogs')
@@ -151,24 +151,80 @@ for(i in 1:10){
 
 saveRDS(Ngram_Words3,"Ngram_Words3.Rdata")
 
-Ngram_Words3 <- readRDS("Ngram_Words3.Rdata")
-
+Ngram_Words <- readRDS("Ngram_Words3.Rdata")
+setkey(Ngram_Words,Fold)
 rm(Base_FiveGram,Base_FourGram,Base_ThreeGram,Base_TwoGram,Corp,Fivegram,Fourgram
    ,Threegram,Twogram,Tok,FiveG_Words,FourG_Words,ThreeG_Words,TwoG_Words,OneG_Words
    ,Ngram_Words,Train,i,testIndexes)
 
-for (i in 1:10) {
+K <- 10
+ParGamma <- c(0.25,0.5,0.75)
 
-            Ngram_Words3 <-     Ngram_Words3 %>%filter(Fold!=1)  %>%
-                  group_by(Prefix,Pred,ngram) %>% summarise(N=sum(N)) 
+GammaRes <- as.numeric( rep(0,10*length(ParGamma)^4))
+
+
+
+for (i in 1:K) {
+
+          
+            Ngram_Words3 <-     Ngram_Words %>%filter(Fold!=1)  %>%
+                  group_by(Prefix,Pred,ngram) %>% summarise(N=sum(N)) %>% data.table()
+            setkey(Ngram_Words3,ngram,Prefix)
             
             testIndexes <- sample(which(folds==2,arr.ind=TRUE),1000,replace=FALSE)
             
-            Test<- TotalTrain[testIndexes, ]
+            Test<- data.table(TotalTrain[testIndexes, ])
             
-               Test$len <- stri_count_words(Test$x)
+            Test<- data.table(iconv(Test$x, "UTF-8", "UTF-8",sub=''))
+            Test$V1 <- tolower(Test$V1)
+            Test$V1 <- gsub('[[:punct:] ]+',' ',Test$V1)
+            Test$V1 <- gsub('[0-9]+', '', Test$V1)
+            
+            ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
+            
+            Test$V1 <- removeWords(Test$V1,ProfanityWords$V1)
+            
+            
                
-           
+               Test$len <- apply(Test,1,function(x) sapply(strsplit(x[[1]]," "),length))
+               
+               
+   
+               
+               set.seed(124)
+            Test$Start <- apply(Test,1,function(x) sample(1:(as.numeric(x[[2]])-1),1))
             
+         
+            
+            Test$End <- apply(Test,1,function(x) 
+              
+                                
+                              if( as.numeric(x[[3]])+3>as.numeric(x[[2]])-1)
+                              {  return(as.numeric(x[[2]])-1) }
+                              else { return(as.numeric(x[[3]])+3) }
+                              )
+                                                    
+
+                                            
+        Test$Prefix <- word(Test$V1,as.numeric(Test$Start),as.numeric(Test$End))
+        
+        Test$Pred <- word(Test$V1,as.numeric(Test$End)+1,as.numeric(Test$End)+1)
+        
+      
+        Test$Prob <- apply(Test,1,function(x) GetObsProbs_Spec(x[[5]],x[[6]]))
+        
+        
+        GammaIndx <-  {if(GammaRes[1]==0) 1
+          else as.numeric(tail(which(GammaRes>0),1))+1}
+        
+        GammaRes[GammaIndx] <-sum(Test$Prob,na.rm = TRUE)/sum(complete.cases(Test))
+        
+        
+        
 }
+
+
+
+
+
 
