@@ -160,14 +160,22 @@ rm(Base_FiveGram,Base_FourGram,Base_ThreeGram,Base_TwoGram,Corp,Fivegram,Fourgra
 K <- 10
 ParGamma <- c(0.25,0.5,0.75)
 
-GammaRes <- as.numeric( rep(0,10*length(ParGamma)^4))
+GammaRes <- as.numeric( rep(0,K*length(ParGamma)^4))
 
-
+for(gamma2 in ParGamma){
+  for(gamma3 in ParGamma){
+    for(gamma4 in ParGamma){
+      for(gamma5 in ParGamma){
+        
+      }
+    }
+  }
+}
 
 for (i in 1:K) {
 
           
-            Ngram_Words3 <-     Ngram_Words %>%filter(Fold!=1)  %>%
+            Ngram_Words3 <-     Ngram_Words %>%filter(Fold!=i)  %>%
                   group_by(Prefix,Pred,ngram) %>% summarise(N=sum(N)) %>% data.table()
             setkey(Ngram_Words3,ngram,Prefix)
             
