@@ -69,7 +69,7 @@ gamma5 <- 0.5
 
 
 
-MakeNGrams <- function(Sentence)
+MakeNGrams2 <- function(Sentence)
 {
   Sentence <- tolower(Sentence) 
   x <- as.character( rep("",4))
@@ -110,28 +110,35 @@ GetObsProbs <- function(Sentence,gamma2=0.5,gamma3=0.5,gamma4=0.5,gamma5=0.5){
   Inp_4g <- ngrams[[4]]
   
   #------------------------------------------------------------               
-  obs_5 <- data.table(FiveG_Words[Prefix==Inp_4g[[1]] ,c(2,3)] %>%
+  obs_5 <- data.table(Ngram_Words3[Ngram_Words3$Prefix==Inp_4g[[1]] & 
+                                     Ngram_Words3$ngram==5 ,c(2,4)] %>%
                         arrange(desc(N)))
   TotalSum_5 <- sum(obs_5$N)
   obsProb_5 <- data.table(obs_5$Pred,(obs_5$N-gamma5)/TotalSum_5)
   alpha_5 <- 1 - sum(obsProb_5$V2)
   #------------------------------------------------------------               
-  obs_4 <- data.table(FourG_Words[Prefix==Inp_3g[[1]] ,c(2,3)] %>% arrange(desc(N)))
+  obs_4 <- data.table(Ngram_Words3[Ngram_Words3$Prefix==Inp_3g[[1]] & 
+                                     Ngram_Words3$ngram==4 ,c(2,4)] %>%
+                        arrange(desc(N)))
   TotalSum_4 <- sum(obs_4$N)
   obsProb_4 <- data.table(obs_4$Pred,(obs_4$N-gamma4)/TotalSum_4)
   alpha_4 <- 1 - sum(obsProb_4$V2)
   #------------------------------------------------------------               
-  obs_3 <- data.table(ThreeG_Words[Prefix==Inp_2g[[1]],c(2,3)] %>% arrange(desc(N)))
+  obs_3 <- data.table(Ngram_Words3[Ngram_Words3$Prefix==Inp_2g[[1]] & 
+                                     Ngram_Words3$ngram==3 ,c(2,4)] %>%
+                        arrange(desc(N)))
   TotalSum_3 <- sum(obs_3$N)
   obsProb_3 <- data.table(obs_3$Pred,(obs_3$N-gamma3)/TotalSum_3)
   alpha_3 <- 1 - sum(obsProb_3$V2)
   #------------------------------------------------------------
-  obs_2 <- data.table(TwoG_Words[Prefix==Inp_1g[[1]],c(2,3)] %>% arrange(desc(N)))
+  obs_2 <- data.table(Ngram_Words3[Ngram_Words3$Prefix==Inp_1g[[1]] & 
+                                     Ngram_Words3$ngram==2 ,c(2,4)] %>%
+                        arrange(desc(N)))
   TotalSum_2 <- sum(obs_2$N)
   obsProb_2 <- data.table(obs_2$Pred,(obs_2$N-gamma2)/TotalSum_2)
   alpha_2 <- 1 - sum(obsProb_2$V2)
   #------------------------------------------------------------
-  TotalWords <- data.table(OneG_Words[,c(1,2)] %>% arrange(desc(N)))
+  TotalWords <- data.table(Ngram_Words3[Ngram_Words3$ngram==1,c(2,4)] %>% arrange(desc(N)))
   unobs_1 <- TotalWords[!(Pred %in% obs_2$V2),]
   TotalSum_1 <- sum(unobs_1$N)
   Prob_1 <- data.table(unobs_1$Pred,alpha_2*unobs_1$N/TotalSum_1)
