@@ -26,6 +26,16 @@ library(quanteda)
 # Input17 <- "Sell the"
 # Input18 <- "This Video will be"
 # Input19 <- "have to put on"
+#Input20 <- "When you breathe, I want to be the air for you. I'll be there for you, I'd live and I'd"
+Input21 <- "Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his"
+Input22 <- "I'd give anything to see arctic monkeys this"
+Input23 <- "Talking to your mom has the same effect as a hug and helps reduce your"
+Input24 <- "When you were in Holland you were like 1 inch away from me but you hadn't time to take a"
+Input25 <- "I'd just like all of these questions answered, a presentation of evidence, and a jury to settle the"
+Input26 <- "I can't deal with unsymetrical things. I can't even hold an uneven number of bags of groceries in each"
+Input27 <- "Every inch of you is perfect from the bottom to the"
+Input28 <- "I’m thankful my childhood was filled with imagination and bruises from playing"
+Input29 <- "I like how the same people are in almost all of Adam Sandler's"
 
 
 gamma2 <- 2
