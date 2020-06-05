@@ -4,6 +4,8 @@ library(stringr)
 library(data.table)
 library(quanteda)
 library(tm)
+library(doParallel)
+
 
 TrainTwitter <- read.table("TrainTwitter2.txt",header = TRUE,fill=TRUE) %>% mutate(Source='Twitter')
 TrainBlogs <- read.table("TrainBlogs2.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='Blogs')
@@ -13,84 +15,81 @@ TotalTrain <- rbind(TrainTwitter,TrainBlogs,TrainNews)
 
 rm(TrainTwitter,TrainBlogs,TrainNews)
 
-
+K <- 2
 #Randomly shuffle the data
 N <- nrow(TotalTrain)
 
 set.seed(121)
 TotalTrain<-TotalTrain[sample(N),]
 #Create 10 equally size folds
-folds <- cut(seq(1,N),breaks=10,labels=FALSE)
+folds <- cut(seq(1,N),breaks=K,labels=FALSE)
 #Perform 10 fold cross validation
 
-for(i in 1:10){
+n_cores <- parallel::detectCores() - 2
+
+cl <- makeCluster(n_cores)
+
+registerDoParallel(cl)
+
+
+
+Ngram_Words_Folds <- foreach(i = 1:K ,.combine=rbind,  .packages =c('data.table','stringi'
+                                                               ,'stringr','dplyr',
+                                                               'quanteda','tm')
+                            ) 
+        %dopar% {
+                          
+                          
                     #Segement your data by fold using the which() function 
                     testIndexes <- which(folds==i,arr.ind=TRUE)
                     
                     Train<- TotalTrain[testIndexes, ]
                     
                     #Delete unkown characters.
-                    Train<- data.table(iconv(Train$x, "UTF-8", "UTF-8",sub=''),Train$Source)
-                    names(Train) <- c("x","Source")
+                    Train<- data.table(iconv(Train$x, "UTF-8", "UTF-8",sub=''))
+                    
                     
                     #Delete break lines.
-                    Train <-  data.table(str_replace_all(Train$x, "[\r\n]" , " "),Train$Source)
-                    names(Train) <- c("x","Source")
+                    Train <-  data.table(str_replace_all(Train$V1, "[\r\n]" , " "))
                     
                     
-                    #Creating Corpus
-                    Corp <- data.table(corpus(as.character(Train$x)),Train$Source)
-                    names(Corp) <- c("x","Source")
+                    # Lowecase
+                    Train$V1 <- tolower(Train$V1)
+                    #Removing punctuations and numbers
+                    Train$V1 <- gsub('[[:punct:] ]+',' ',Train$V1)
+                    Train$V1 <- gsub('[0-9]+', '', Train$V1)
                     
-                    
-                    #Create tokens + Remove numbers & punctuations
-                    Tok <- data.table(tokens(Corp$x,remove_punct = TRUE, remove_numbers =  TRUE,
-                                             remove_symbols = TRUE),Train$Source)
-                    names(Tok) <- c("x","Source")
-                    
-                    
-                    #Lowercase all the characters.
-                    Tok <- data.table(tokens_tolower(Tok$x) , Tok$Source )
-                    names(Tok) <- c("x","Source")
-                    
-                    #Remove profane words.
+                    #Remove Profanity words
                     ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
-                    
-                    Tok <- data.table(tokens_select(Tok$x,ProfanityWords$V1,
-                                                    selection = "remove", padding = FALSE) , Tok$Source )
-                    names(Tok) <- c("x","Source")
+                    Train$V1 <- removeWords(Train$V1,ProfanityWords$V1)
                     
                     rm(ProfanityWords)
                     
-                    #Lemmatization
+                    #Creating Corpus
+                    Corp <- corpus(as.character(Train$V1))
                     
-                    # Tok <- data.table(tokens_wordstem(Tok$x) , Tok$Source )
-                    # names(Tok) <- c("x","Source")
+                    rm(Train)                   
+                    #Create tokens
+                    Tok <- data.table(tokens(Corp))
                     
+                    rm(Corp)
                     
                     
                     # Building 2-gram & 3-grams
                     
-                    Twogram <-  data.table(tokens_ngrams(Tok$x, n =2, concatenator = " "), Tok$Source)
-                    names(Tok) <- c("x","Source")
+                    Twogram <-  data.table(tokens_ngrams(Tok$V1, n =2, concatenator = " "))
                     
+                    Threegram <-  data.table(tokens_ngrams(Tok$V1, n =3, concatenator = " "))
                     
+                    Fourgram <-  data.table(tokens_ngrams(Tok$V1, n =4, concatenator = " "))
                     
-                    Threegram <-  data.table(tokens_ngrams(Tok$x, n =3, concatenator = " "), Tok$Source)
-                    names(Tok) <- c("x","Source")
-                    
-                    
-                    Fourgram <-  data.table(tokens_ngrams(Tok$x, n =4, concatenator = " "), Tok$Source)
-                    names(Tok) <- c("x","Source")
-                    
-                    Fivegram <-  data.table(tokens_ngrams(Tok$x, n =5, concatenator = " "), Tok$Source)
-                    names(Tok) <- c("x","Source")
+                    Fivegram <-  data.table(tokens_ngrams(Tok$V1, n =5, concatenator = " "))
                     
                     
                     
                     ## Cleaning the Tokens
                     
-                    OneG_Words <- data.table( table(as.character(Tok$x))  )
+                    OneG_Words <- data.table( table(as.character(Tok$V1))  )
                   
                     
                     Base_TwoGram <- data.table( table(as.character(Twogram$V1))  )
@@ -131,108 +130,122 @@ for(i in 1:10){
                     FiveG_Words <- data.table(paste(FiveG_Words$V1,FiveG_Words$V2,FiveG_Words$V3,FiveG_Words$V4),FiveG_Words$V5,FiveG_Words$N)
                     names(FiveG_Words) <- c("Prefix","Pred","N")
                     
-                    Ngram_Words <- rbind(data.table(Prefix="",OneG_Words,ngram=1,Fold=i),
+                    Ngram_Words_Folds <- rbind(data.table(Prefix="",OneG_Words,ngram=1,Fold=i),
                                          data.table(TwoG_Words,ngram=2,Fold=i),
                                          data.table(ThreeG_Words,ngram=3,Fold=i),
                                          data.table(FourG_Words,ngram=4,Fold=i),
                                          data.table(FiveG_Words,ngram=5,Fold=i))
-                    {
-                    if (i==1) {Ngram_Words3 <- Ngram_Words}
-                    else    {Ngram_Words3 <- rbind(Ngram_Words3,Ngram_Words)}
-                    }
-                    
-                    Ngram_Words3 <-     Ngram_Words3 %>%filter(N>1) 
-                    Ngram_Words3 <- data.table(Ngram_Words3)
-                    setkey(Ngram_Words3,Fold,N)
+              
     
                     
 }
 
 
-saveRDS(Ngram_Words3,"Ngram_Words3.Rdata")
 
-Ngram_Words <- readRDS("Ngram_Words3.Rdata")
-setkey(Ngram_Words,Fold)
-rm(Base_FiveGram,Base_FourGram,Base_ThreeGram,Base_TwoGram,Corp,Fivegram,Fourgram
-   ,Threegram,Twogram,Tok,FiveG_Words,FourG_Words,ThreeG_Words,TwoG_Words,OneG_Words
-   ,Ngram_Words,Train,i,testIndexes)
-
-K <- 10
-ParGamma <- c(0.25,0.5,0.75)
-
-GammaRes <- as.numeric( rep(0,K*length(ParGamma)^4))
-
-for(gamma2 in ParGamma){
-  for(gamma3 in ParGamma){
-    for(gamma4 in ParGamma){
-      for(gamma5 in ParGamma){
-        
-      }
-    }
-  }
-}
-
-for (i in 1:K) {
-
-          
-            Ngram_Words3 <-     Ngram_Words %>%filter(Fold!=i)  %>%
-                  group_by(Prefix,Pred,ngram) %>% summarise(N=sum(N)) %>% data.table()
-            setkey(Ngram_Words3,ngram,Prefix)
-            
-            testIndexes <- sample(which(folds==2,arr.ind=TRUE),1000,replace=FALSE)
-            
-            Test<- data.table(TotalTrain[testIndexes, ])
-            
-            Test<- data.table(iconv(Test$x, "UTF-8", "UTF-8",sub=''))
-            Test$V1 <- tolower(Test$V1)
-            Test$V1 <- gsub('[[:punct:] ]+',' ',Test$V1)
-            Test$V1 <- gsub('[0-9]+', '', Test$V1)
-            
-            ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
-            
-            Test$V1 <- removeWords(Test$V1,ProfanityWords$V1)
-            
-            
-               
-               Test$len <- apply(Test,1,function(x) sapply(strsplit(x[[1]]," "),length))
-               
-               
-   
-               
-               set.seed(124)
-            Test$Start <- apply(Test,1,function(x) sample(1:(as.numeric(x[[2]])-1),1))
-            
-         
-            
-            Test$End <- apply(Test,1,function(x) 
-              
-                                
-                              if( as.numeric(x[[3]])+3>as.numeric(x[[2]])-1)
-                              {  return(as.numeric(x[[2]])-1) }
-                              else { return(as.numeric(x[[3]])+3) }
-                              )
-                                                    
-
-                                            
-        Test$Prefix <- word(Test$V1,as.numeric(Test$Start),as.numeric(Test$End))
-        
-        Test$Pred <- word(Test$V1,as.numeric(Test$End)+1,as.numeric(Test$End)+1)
-        
-      
-        Test$Prob <- apply(Test,1,function(x) GetObsProbs_Spec(x[[5]],x[[6]]))
-        
-        
-        GammaIndx <-  {if(GammaRes[1]==0) 1
-          else as.numeric(tail(which(GammaRes>0),1))+1}
-        
-        GammaRes[GammaIndx] <-sum(Test$Prob,na.rm = TRUE)/sum(complete.cases(Test))
-        
-        
-        
-}
+Ngram_Words_Folds <-     Ngram_Words_Folds %>%filter(N>1) 
+Ngram_Words_Folds <- data.table(Ngram_Words_Folds)
 
 
 
+saveRDS(Ngram_Words_Folds,"Ngram_Words_Folds.Rdata")
+
+  Ngram_Words_Folds <- readRDS("Ngram_Words_Folds.Rdata")
+  setkey(Ngram_Words_Folds,Fold)
+  
 
 
+
+ParGamma <- c(0.5,1,2)
+
+
+K <- 2
+
+
+cl <- makeCluster(n_cores)
+registerDoParallel(cl)
+Res <-
+  foreach(gamma2 = ParGamma, .combine = 'rbind') %:% 
+  foreach(gamma3 = ParGamma, .combine = 'rbind')%:% 
+  foreach(gamma4 = ParGamma, .combine = 'rbind')%:% 
+  foreach(gamma5 = ParGamma, .combine = 'rbind')%:% 
+  
+ foreach (i = 1:K,.combine = 'rbind',.packages =c('data.table','stringi'
+                                                   ,'stringr','dplyr',
+                                                   'quanteda','tm')) %do% {
+                                                     
+                                                     setkey(Ngram_Words_Folds,Fold)
+                                                     Ngram_Words_Folds_i <-     Ngram_Words_Folds %>%filter(Fold!=i)  %>%
+                                                       group_by(Prefix,Pred,ngram) %>% summarise(N=sum(N)) %>% data.table()
+                                                     setkey(Ngram_Words_Folds_i,ngram,Prefix)
+                                                     
+                                                     # set.seed(124)
+                                                     testIndexes <- top_n(as.data.frame(which(folds==i,arr.ind=TRUE)),10)[[1]]
+                                                     
+                                                     Test<- data.table(TotalTrain[testIndexes, ])
+                                                     
+                                                     Test<- data.table(iconv(Test$x, "UTF-8", "UTF-8",sub=''))
+                                                     Test$V1 <- tolower(Test$V1)
+                                                     Test$V1 <- gsub('[[:punct:] ]+',' ',Test$V1)
+                                                     Test$V1 <- gsub('[0-9]+', '', Test$V1)
+                                                     
+                                                     ProfanityWords <- read.table("Profanity.txt",sep="\n",quote = "")
+                                                     
+                                                     Test$V1 <- removeWords(Test$V1,ProfanityWords$V1)
+                                                     
+                                                     
+                                                     
+                                                     Test$len <- apply(Test,1,function(x) sapply(strsplit(x[[1]]," "),length))
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     set.seed(125)
+                                                     Test$Start <- apply(Test,1,function(x) sample(1:(as.numeric(x[[2]])-1),1))
+                                                     
+                                                     
+                                                     
+                                                     Test$End <- apply(Test,1,function(x) 
+                                                       
+                                                       
+                                                       if( as.numeric(x[[3]])+3>as.numeric(x[[2]])-1)
+                                                       {  return(as.numeric(x[[2]])-1) }
+                                                       else { return(as.numeric(x[[3]])+3) }
+                                                     )
+                                                     
+                                                     
+                                                     
+                                                     Test$Prefix <- word(Test$V1,as.numeric(Test$Start),as.numeric(Test$End))
+                                                     
+                                                     Test$Pred <- word(Test$V1,as.numeric(Test$End)+1,as.numeric(Test$End)+1)
+                                                     
+                                                     
+                                                     Test$Prob <- apply(Test,1,function(x) GetObsProbs_Spec(x[[5]],x[[6]],
+                                                                                                            gamma2,gamma3,gamma4,gamma5,
+                                                                                                            Ngram_Words_Folds_i))
+                                                     
+                                                     
+                                                     Result <- c(sum(Test$Prob,na.rm = TRUE)/sum(!is.na(Test$Prob)),gamma2,gamma3
+                                                                 ,gamma4,gamma5,i)
+                                                     names(Result) <- c("Prob","gamma2","gamma3","gamma4","gamma5","Folds")
+                                                     list(Result,Test)
+                                                     
+                                                     
+                                                     
+                                                   }
+
+stopCluster(cl)
+
+
+saveRDS(Res,"Res.Rdata")
+
+
+Res <- readRDS("Res.Rdata")
+
+Res <-  data.table(matrix(unlist(Res[,1]), nrow=length(Res[,1]), byrow=T),
+                   stringsAsFactors=FALSE)
+Res <- Res %>% group_by(V2,V3,V4,V5) %>% summarise(mean(V1)) %>% data.table()
+
+names(Res) <- c("gamma2","gamma3","gamma4","gamma5","Prob")
+
+Res.Max <- Res[which.max(Res$Prob)]
 
