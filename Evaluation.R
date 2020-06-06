@@ -7,9 +7,9 @@ library(tm)
 library(doParallel)
 
 
-TrainTwitter <- read.table("TrainTwitter2.txt",header = TRUE,fill=TRUE) %>% mutate(Source='Twitter')
-TrainBlogs <- read.table("TrainBlogs2.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='Blogs')
-TrainNews <- read.table("TrainNews2.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='News')
+TrainTwitter <- read.table("TrainTwitter.txt",header = TRUE,fill=TRUE) %>% mutate(Source='Twitter')
+TrainBlogs <- read.table("TrainBlogs.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='Blogs')
+TrainNews <- read.table("TrainNews.txt",header = TRUE,fill=TRUE)  %>% mutate(Source='News')
 
 TotalTrain <- rbind(TrainTwitter,TrainBlogs,TrainNews)
 
@@ -36,8 +36,7 @@ registerDoParallel(cl)
 Ngram_Words_Folds <- foreach(i = 1:K ,.combine=rbind,  .packages =c('data.table','stringi'
                                                                ,'stringr','dplyr',
                                                                'quanteda','tm')
-                            ) 
-        %dopar% {
+                            ) %dopar% {
                           
                           
                     #Segement your data by fold using the which() function 
@@ -140,7 +139,7 @@ Ngram_Words_Folds <- foreach(i = 1:K ,.combine=rbind,  .packages =c('data.table'
                     
 }
 
-
+stopCluster(cl)
 
 Ngram_Words_Folds <-     Ngram_Words_Folds %>%filter(N>1) 
 Ngram_Words_Folds <- data.table(Ngram_Words_Folds)
@@ -179,7 +178,7 @@ Res <-
                                                      setkey(Ngram_Words_Folds_i,ngram,Prefix)
                                                      
                                                      # set.seed(124)
-                                                     testIndexes <- top_n(as.data.frame(which(folds==i,arr.ind=TRUE)),10)[[1]]
+                                                     testIndexes <- top_n(as.data.frame(which(folds==i,arr.ind=TRUE)),200)[[1]]
                                                      
                                                      Test<- data.table(TotalTrain[testIndexes, ])
                                                      
@@ -227,7 +226,7 @@ Res <-
                                                      Result <- c(sum(Test$Prob,na.rm = TRUE)/sum(!is.na(Test$Prob)),gamma2,gamma3
                                                                  ,gamma4,gamma5,i)
                                                      names(Result) <- c("Prob","gamma2","gamma3","gamma4","gamma5","Folds")
-                                                     list(Result,Test)
+                                                     Result
                                                      
                                                      
                                                      
@@ -236,7 +235,7 @@ Res <-
 stopCluster(cl)
 
 
-saveRDS(Res,"Res.Rdata")
+saveRDS(Res,"Res2.Rdata")
 
 
 Res <- readRDS("Res.Rdata")
