@@ -154,11 +154,7 @@ saveRDS(Ngram_Words_Folds,"Ngram_Words_Folds.Rdata")
 
 
 
-ParGamma <- c(0.5,1,2)
-
-
-K <- 2
-
+ParGamma <- c(0.1,0.2,0.5)
 
 cl <- makeCluster(n_cores)
 registerDoParallel(cl)
@@ -235,16 +231,23 @@ Res <-
 stopCluster(cl)
 
 
-saveRDS(Res,"Res2.Rdata")
+saveRDS(Res,"Res3.Rdata")
 
 
-Res <- readRDS("Res.Rdata")
+Res <- readRDS("Res3.Rdata")
 
-Res <-  data.table(matrix(unlist(Res[,1]), nrow=length(Res[,1]), byrow=T),
-                   stringsAsFactors=FALSE)
-Res <- Res %>% group_by(V2,V3,V4,V5) %>% summarise(mean(V1)) %>% data.table()
+
+Res <- Res %>% data.table() %>% group_by(gamma2,gamma3,gamma4,gamma5) %>% summarise(mean(Prob)) %>% data.table()
 
 names(Res) <- c("gamma2","gamma3","gamma4","gamma5","Prob")
 
+
 Res.Max <- Res[which.max(Res$Prob)]
 
+Res.Max
+
+
+Res %>% arrange(desc(Prob))
+
+
+top_n(Res,10,Prob)
