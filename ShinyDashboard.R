@@ -9,6 +9,18 @@ server <-  function(input,output){
   suppressWarnings(library(shiny))
   suppressWarnings(library(DT)) 
   source("KatzBackoff_Model.R")
+  
+  wordButton <- function(word) {
+    #div(word, class = "btn btn-info", id=word)
+    actionButton(word,word)
+  }
+  
+  ClickButton <- function(word){
+    
+    #observeEvent(input$word, {word})
+    observeEvent(input$word,output$wordtext <-   renderText(word))
+  }
+  
   Ngram_Words <<- readRDS("Ngram_Words.Rdata")
   
   Res <- reactive({suppressWarnings( GetObsProbs(input$inp_Prefix) )})
@@ -22,14 +34,23 @@ server <-  function(input,output){
                          paging=FALSE) 
   )
   
-  output$out_Pred <- renderDataTable( Res()[,1] ,options = list(searching = FALSE,
-                                                                lengthChange = FALSE,
-                                                                info=FALSE,
-                                                                paging=FALSE
-                                                                , selection = 'single' )
-                                              )
   
-  output$out_Prefix <- reactive({ input$inp_Prefix} )   
+  output$out_Prefix <- reactive({ input$inp_Prefix} )  
+  
+  
+  
+  output$words <- renderUI({
+    lapply(as.list(Res()[,1])[[1]], wordButton)
+                    })
+  
+  
+    reactive({lapply(as.list(Res()[,1])[[1]], ClickButton)})
+  
+  
+   #observeEvent(input$go,output$x <-   renderText("test"))
+   
+ 
+
 }
 
 
@@ -46,9 +67,12 @@ ui <- fluidPage(
     
     mainPanel(
       dataTableOutput("out_Pred_table"),
-      dataTableOutput("out_Pred"),
-      h1(textOutput("out_Prefix"))
-      
+      h1(textOutput("out_Prefix")),
+      uiOutput("words"),
+      # actionButton("go", "Go"),
+    # verbatimTextOutput("x"),
+      verbatimTextOutput("wordtext")
+
     )
   )
 )
