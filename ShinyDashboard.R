@@ -21,15 +21,15 @@ server <-  function(session,input,output){
   source("KatzBackoff_Model.R")
   
   wordButton <- function(word) {
-    #div(word, class = "btn btn-info", id=word)
-    actionButton(word,word)
+                        
+                        actionButton(word,word)
   }
   
   ClickButton <- function(word){
     
-    #observeEvent(input$word, {word}
-    observeEvent(input[[word]],output$Click <-   renderText(word))
-    #observeEvent(input$word,output$wordtext <-   renderText(word))
+                observeEvent(input[[word]],
+                 {updateTextInput(session,"inp_Prefix",value=paste(isolate(input$inp_Prefix)
+                                                                   , isolate(word)))})
   }
   
   Ngram_Words <<- readRDS("Ngram_Words.Rdata")
@@ -39,7 +39,7 @@ server <-  function(session,input,output){
   
   output$out_Pred_table <-  renderDataTable(
     
-    Res(),options = list(searching = FALSE,
+                    Res(),options = list(searching = FALSE,
                          lengthChange = FALSE,
                          info=FALSE,
                          paging=FALSE) 
@@ -49,10 +49,12 @@ server <-  function(session,input,output){
   output$out_Prefix <- reactive({ input$inp_Prefix} )  
   
   
+  Preds <- reactive({ as.list(Res()[,1])[[1]] })
+  
   
   output$words <- renderUI({
-    lapply(as.list(Res()[,1])[[1]], wordButton)
-                    })
+                              lapply(as.list(Preds()), wordButton)
+                            })
   
 
   Pred1 <- reactive({Res()[1,1][[1]]})
@@ -61,18 +63,29 @@ server <-  function(session,input,output){
   Pred4 <- reactive({Res()[4,1][[1]]})
   Pred5 <- reactive({Res()[5,1][[1]]})
   
+  observeEvent(input[[Pred1()]],
+               {updateTextInput(session,"inp_Prefix",
+                                value=paste(isolate(input$inp_Prefix), isolate(Pred1())))})
   
-  output$words <- renderUI({actionButton(Res()[1,1][[1]],Res()[1,1][[1]])})
+  observeEvent(input[[Pred2()]],
+               {updateTextInput(session,"inp_Prefix",
+                                value=paste(isolate(input$inp_Prefix), isolate(Pred2())))})
+  observeEvent(input[[Pred3()]],
+               {updateTextInput(session,"inp_Prefix",
+                                value=paste(isolate(input$inp_Prefix), isolate(Pred3())))})
+  observeEvent(input[[Pred4()]],
+               {updateTextInput(session,"inp_Prefix",
+                                value=paste(isolate(input$inp_Prefix), isolate(Pred4())))})
+  observeEvent(input[[Pred5()]],
+               {updateTextInput(session,"inp_Prefix",
+                                value=paste(isolate(input$inp_Prefix), isolate(Pred5())))})
   
-  observeEvent(input[[Res()[1,1][[1]]]],{updateTextInput(session,"inp_Prefix",value=paste(isolate(input$inp_Prefix)
-                                                                                          , isolate(Res()[1,1][[1]])))})
   
-    #reactive({lapply(as.list(Res()[,1])[[1]], ClickButton)})
+
   
   
-   #observeEvent(input$go,output$x <-   renderText("test"))
-   
- 
+  
+  
 }
 
 
@@ -88,12 +101,12 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      dataTableOutput("out_Pred_table"),
-      h1(textOutput("out_Prefix")),
-      uiOutput("words"),
-      # actionButton("go", "Go"),
-    # verbatimTextOutput("x"),
-      verbatimTextOutput("Click")
+                  dataTableOutput("out_Pred_table"),
+                  h1(textOutput("out_Prefix")),
+                  uiOutput("words"),
+                  # actionButton("go", "Go"),
+                # verbatimTextOutput("x"),
+                  verbatimTextOutput("Click")
 
     )
   )
