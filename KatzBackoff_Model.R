@@ -89,6 +89,7 @@ GetObsProbs <- function(Sentence,gamma2=2,gamma3=0.5,gamma4=0.5,gamma5=0.5){
   #------------------------------------------------------------  
   Prob_5 <- rbind(obsProb_5,Prob_4)
   names(Prob_5) <- c("Prediction","Probability")
+  Prob_5$Probability <- round(Prob_5$Probability ,3)
   data.table(top_n(Prob_5,5,Probability))
   
 }
