@@ -10,14 +10,7 @@ suppressWarnings(library(DT))
 
 server <-  function(session,input,output){
   
-  suppressWarnings(library(dplyr))
-  suppressWarnings(library(stringi))
-  suppressWarnings(library(stringr))
-  suppressWarnings(library(data.table))
-  suppressWarnings(library(quanteda))
-  suppressWarnings(library(shinydashboard))
-  suppressWarnings(library(shiny))
-  suppressWarnings(library(DT)) 
+
   source("KatzBackoff_Model.R")
   
   wordButton <- function(word) {
