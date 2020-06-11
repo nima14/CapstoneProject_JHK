@@ -1,0 +1,12 @@
+---
+title: "About"
+author: "Nima Taghidoost"
+date: "6/11/2020"
+output: html_document
+---
+
+- Katz's Back-off: <https://en.wikipedia.org/wiki/Katz%27s_back-off_model>
+- Good-Turing: <https://en.wikipedia.org/wiki/Good%E2%80%93Turing_frequency_estimation>
+- Github: <https://github.com/nima14/CapstoneProject_JHK>
+- Linkedin: <https://www.linkedin.com/in/nimataghidoost/>
+
