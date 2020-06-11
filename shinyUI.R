@@ -1,3 +1,12 @@
+suppressWarnings(library(dplyr))
+suppressWarnings(library(stringi))
+suppressWarnings(library(stringr))
+suppressWarnings(library(data.table))
+suppressWarnings(library(quanteda))
+suppressWarnings(library(shinydashboard))
+suppressWarnings(library(shiny))
+suppressWarnings(library(DT)) 
+suppressWarnings(library(shinyWidgets))
 
 server <-  function(session,input,output){
   
@@ -78,8 +87,6 @@ server <-  function(session,input,output){
   
   
   
-  
-  
 }
 
 
@@ -96,13 +103,13 @@ ui <-function(){
 
                     # use a gradient in background
                     setBackgroundColor(
-                      color = c("#379683")
+                      color = c("#f3f3f3")
                     ),
                     sidebarLayout(
                       
                       
                       sidebarPanel(
-                        tags$style(".well {background-color: #EDF5E1;}"),
+                        tags$style(".well {background-color: #d3d3d3;}"),
                         
                         
                         
@@ -114,44 +121,35 @@ ui <-function(){
                                       , height = "100px"
                                       ),
                         br(),
-                      #  h1(textOutput("out_Prefix"))
-                        uiOutput("words")
+                        uiOutput("words"),
+                        br(),
+                        h3(textOutput("out_Prefix"))
+                        
+            
+  
                         )
                       ,
-                      mainPanel( 
+                      mainPanel( align="center",
+                                 HTML('<footer>
+                      <img src="logos.png"</img>
+                           </footer>'),
+                                 br(),
+                                 br(),
+                                 br(),
+                                 
                               dataTableOutput("out_Pred_table" , width="125px")
-                        
+                      
                       )
                     )
            ),
            tabPanel("Instructions",
-                    verbatimTextOutput("summary")
-           ),
-           navbarMenu("About Me",
-                      tabPanel("Table",
-                               DT::dataTableOutput("table")
+                    includeMarkdown("Instruction.Rmd")
                       ),
+ 
+                      
                       tabPanel("About",
-                               fluidRow(
-                                 column(6,
-                                        "xa"
-                                 ),
-                                 column(3,
-                                        img(class="img-polaroid",
-                                            src=paste0("http://upload.wikimedia.org/",
-                                                       "wikipedia/commons/9/92/",
-                                                       "1919_Ford_Model_T_Highboy_Coupe.jpg")),
-                                        tags$small(
-                                          "Source: Photographed at the Bay State Antique ",
-                                          "Automobile Club's July 10, 2005 show at the ",
-                                          "Endicott Estate in Dedham, MA by ",
-                                          a(href="http://commons.wikimedia.org/wiki/User:Sfoskett",
-                                            "User:Sfoskett")
-                                        )
-                                 )
-                               )
-                      )
-           )
+                               includeMarkdown("About.Rmd") 
+                                )
 ),
 
 tags$style(type = 'text/css', 
@@ -163,7 +161,11 @@ tags$style(type = 'text/css',
                            .navbar-default .navbar-nav > .active > a:hover {
                                 color: #05386B;
                                 background-color: #EDF5E1;
-                            }')
+                            }
+                .navbar-default .navbar-nav>li>a {color: #EDF5E1;}
+                .navbar .nav > li.current-menu-item > a, .navbar .nav > li.current-menu-ancestor > a, 
+                .navbar .nav > li > a:hover, .navbar .nav > li > a:focus {
+                color: #f5e1ed;}')
 ))
 }
 
