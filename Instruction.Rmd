@@ -1,0 +1,62 @@
+---
+title: "Instruction"
+author: "Nima Taghidoost"
+date: "6/11/2020"
+output: html_document
+---
+  This application is the final and capstone project of the Data Science  Specialization in Coursera. The specialization was held by Johns Hopkins University and this is its 10th course which was in cooperation with SwiftKey company.
+
+
+******
+  
+### Goal
+  
+  The goal of this project was to build an application that can predict the next word based on last words that user has typed.
+  
+******
+
+### Steps
+
+#### Data Cleansing
+
+In this part we did some data cleansing work:
+
+- Delete unknown characters in English
+- Lowercase all the letters
+- Remove the punctuation marks & numbers
+- Remove the profane words
+
+******
+
+#### Exploratory Data Analysis
+
+- At first we used a sample of data to do some EDA.
+- We built our corpus, tokens & n-grams.
+- We built 2-gram, 3-gram, 4-gram & 5-gram based on the sampled data
+- We got the most used n-grams in our 3 sources and also the percentage
+of n-grams that have been used only once. That was around 60 percent of the n-grams!
+
+******
+
+#### Building The Model
+
+- This model was built based on "Katz's back-off"
+- We used "Good-Turing" for smoothing our algorithm
+
+We will explain how this model works with an example:
+Imagine if user has typed "I do not love".
+At first the model does some data cleansing. For example it deletes the punctuation marks, numbers & profane words.
+
+
+Then the model searches through 5-grams to find a combination of 5 words with prefix exactly like the input (which has 4 words).
+
+Imagine if the model finds just this 5-gram: "I do not love you" which has occurred 4 times in train data.
+The MLE method says that the probability of "you" after "I do not love" is 1 but with "Good-Turing" we reduce this probability and make room for unseen 5-grams.
+Here we take 0.5 off the frequency of "you". So now we have 3.5/4 which is 0.875.
+
+Now we have 0.125 left. So we can search through 4-grams to find the combination of 4 words with prefix equal to "do not love". We can give the rest of the probability to the seen 4-grams like "do not love pizza". But we don't give all the probability to the seen 4-grams. We keep some of it for 3-grams which have the prefix "not love" and after that 2-grams with prefix "love".
+
+We reduced the 5-gram's probability by 0.5. This number is called Lambda5. We had to find best combination of Lambda5, Lambda4 , Lambda3 & Lambda2 which are more accurate about the real probability.
+Finding the best lambda for reduced probability needed evaluation and cross-validation.
+
+
