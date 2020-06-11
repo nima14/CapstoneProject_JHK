@@ -1,0 +1,13 @@
+name: CapstoneProject_JHK
+title: CapstoneProject_JHK
+username:
+account: nimataghidoost
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2440519
+bundleId: 3256055
+url: https://nimataghidoost.shinyapps.io/CapstoneProject_JHK/
+when: 1591863026.62419
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: About.html|Answer_Quiz1.R|Create_Ngrams.R|CV_TestFunction.R|Evaluation.R|Evaluation.Rmd|Get_Sample_From_SourceFiles.R|Instruction.html|Instruction.md|Milestone_Capstone.html|Milestone_Capstone.Rmd|Ngram_Words_Folds.Rdata|Res2.Rdata|ShinyDashboard.R|SildeDeck.md|SildeDeck.Rpres|TrainBlogs.txt|TrainNews.txt|TrainTwitter.txt|SildeDeck-figure/unnamed-chunk-1-1.png|SildeDeck-figure/unnamed-chunk-2-1.png|Milestone_Capstone_files
